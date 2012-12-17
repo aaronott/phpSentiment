@@ -42,19 +42,25 @@ class Sentiment{
     $this->setDictionary('neu');
 
     //If dictionary not get give error msg
-    if (!isset($this->dictionary)) echo 'Error Dictionary not set';
+    if (!isset($this->dictionary)) {
+      throw new Sentiment_Exception("Dictionary not set.");
+    }
 
     //Run function to get ignore list
     $this->ignoreList = $this->getList('ign');
 
     //If ingnoreList not get give error message
-    if (!isset($this->ignoreList)) echo 'Error Ignore List not set';
+    if (!isset($this->ignoreList)) {
+      throw new Sentiment_Exception("Ignore List not set.");
+    }
 
     //Get the list of negative prefixes
     $this->negPrefixList = $this->getList('prefix');
 
     //If neg prefix list not set give error
-    if (!isset($this->negPrefixList)) echo 'Error Ignore List not set';
+    if (!isset($this->negPrefixList)) {
+      throw new Sentiment_Exception("Ignore List not set.");
+    }
 
     //For each negative prefix in the list
     foreach($this->negPrefixList as $negPrefix){
@@ -138,7 +144,7 @@ class Sentiment{
       $temp = file_get_contents($fn);
       $words = unserialize($temp);
     } else {
-      echo 'File does not exist: '.$fn;
+      throw new Sentiment_Exception("File does not exist: $fn.");
     }
 
     //Loop through all of the entries
@@ -153,7 +159,9 @@ class Sentiment{
       //If this word isn't already in the dictionary with this class
       if(!isset($this->dictionary[$word][$class])) {
 
-        //Add to this word to the dictionary and set counter value as one. This function ensures that if a word is in the text file more than once it still is only accounted for one in the array
+        // Add to this word to the dictionary and set counter value as one. This
+        // function ensures that if a word is in the text file more than once it
+        // still is only accounted for one in the array
         $this->dictionary[$word][$class] = 1;
 
       }//Close If statement
@@ -188,7 +196,7 @@ class Sentiment{
       $temp = file_get_contents($fn);
       $words = unserialize($temp);
     } else {
-      return 'File does not exist: '.$fn;
+      throw new Sentiment_Exception("File does not exist: $fn.");
     }
 
     //Loop through results
@@ -224,3 +232,5 @@ class Sentiment{
     return strtolower(strtr($string, $diac, 'AAAAAAaaaaaaOOOOOOooooooEEEEeeeeCcIIIIiiiiUUUUuuuuyNn'));
   }//Close _cleanString Function
 }
+
+class Sentiment_Exception extends Exception {}
