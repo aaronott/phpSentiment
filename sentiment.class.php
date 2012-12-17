@@ -28,13 +28,13 @@
         private $maxTokenLength = 15; //max token length for it to be taken into consideration
         private $classes = array('pos', 'neg', 'neu'); // Private array with the two classes, pos/neg
         private $classTokCounts = array('pos' => 0, 'neg' => 0, 'neu' => 0); //Array for number of words in each category
-        private $classDocCounts = array('pos' => 0, 'neg' => 0, 'neu' => 0); //Array for the number of words found in a sentance
+        private $classDocCounts = array('pos' => 0, 'neg' => 0, 'neu' => 0); //Array for the number of words found in a sentence
         private $tokCount = 0; // Token Counter Var
         private $docCount = 0; //Document counter variable
         private $prior = array('pos' => 0.333333333333, 'neg' => 0.333333333333, 'neu' => 0.333333333333); //The original probability of a tweet being categorised as one of the three
 
-        //Function to categorise a tweet/sentance
-        public function categorise($sentance)
+        //Function to categorise a tweet/sentence
+        public function categorise($sentence)
         {
             //Access these text files to get the dictionary for each category
             $this->setDictionary('neg');
@@ -59,15 +59,15 @@
             //For each negative prefix in the list
             foreach($this->negPrefixList as $negPrefix){
                 //Search if that prefix is in the document
-                if(strpos($sentance, $negPrefix)){
+                if(strpos($sentence, $negPrefix)){
                     //Reove the white space after the negative prefix
-                    $sentance = str_replace ($negPrefix . ' ', $negPrefix, $sentance);
+                    $sentence = str_replace ($negPrefix . ' ', $negPrefix, $sentence);
                 }//Close if statement
             }//Close categories function
           
 
             //Tokenise Document
-            $tokens = $this->_getTokens($sentance);
+            $tokens = $this->_getTokens($sentence);
             // calculate the score in each category
             $total_words = 0;
             $total_score = 0;
