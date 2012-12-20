@@ -11,10 +11,7 @@ class DictionaryTest extends PHPUnit_Framework_TestCase
       $list = $dictionary->getList();
       $this->assertEquals(1, sizeof($list));
 
-      $classes = array_keys($list);
-      $class = array_shift($classes);
-
-      $this->assertEquals('neg', $class);
+      $this->assertEquals('neg', key($list));
     }
 
     public function testAddDictionary() {
@@ -25,21 +22,19 @@ class DictionaryTest extends PHPUnit_Framework_TestCase
       $list = $dictionary->getList();
       $this->assertEquals(1, sizeof($list));
 
-      $classes = array_keys($list);
-      $class = array_shift($classes);
-      $this->assertEquals('neg', $class);
+      $this->assertEquals('neg', key($list));
 
       $dictionary->addDictionary('pos');
 
       $list = $dictionary->getList();
       $this->assertEquals(2, sizeof($list));
 
-      $class_keys = array_keys($list);
-      $class = array_shift($class_keys);
-      $this->assertEquals('neg', $class);
+      $this->assertEquals('neg', key($list));
 
-      $class = array_shift($class_keys);
-      $this->assertEquals('pos', $class);
+      // advance the pointer so we can make sure the dictionary was added.
+      next($list);
+
+      $this->assertEquals('pos', key($list));
     }
 
     public function testGetlist() {
@@ -50,8 +45,7 @@ class DictionaryTest extends PHPUnit_Framework_TestCase
       $this->assertEquals('array', gettype($list));
       $this->assertGreaterThan(5, sizeOf($list));
 
-      $words = array_keys($list);
-      $this->assertEquals('ccedil', $words[0]);
+      $this->assertEquals('ccedil', key($list));
     }
 }
 ?>

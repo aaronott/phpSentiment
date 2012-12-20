@@ -24,70 +24,89 @@ require_once "dictionary.php";
 
 
 class Sentiment{
+  private $dictionary;
+  private $ignoreDictionary;
+  private $previxDictionary;
   private $minTokenLength = 1; //min token length for it to be taken into consideration
   private $maxTokenLength = 15; //max token length for it to be taken into consideration
   private $prior = array('pos' => 0.333333333333, 'neg' => 0.333333333333, 'neu' => 0.333333333333); //The original probability of a tweet being categorised as one of the three
 
-  //Function to categorise a tweet/sentence
-  public function categorise($sentence) {
-    //Access these text files to get the dictionary for each category
+  /**
+   * Constructor
+   *
+   * Build the dictionary to check against.
+   */
+  public function __construct() {
     $dictionary = new Dictionary();
     $dictionary->addDictionary('neg');
     $dictionary->addDictionary('pos');
     $dictionary->addDictionary('neu');
 
-    $ignoreDictionary = new Dictionary('ign');
-    $prefixDictionary = new Dictionary('prefix');
-
     $this->dictionary = $dictionary->getList();
+    $this->ignoreDictionary = new Dictionary('ign');
+    $this->prefixDictionary = new Dictionary('prefix');
+  }
 
-    //For each negative prefix in the list
-    foreach($prefixDictionary->getList('prefix') as $negPrefix){
-      //Search if that prefix is in the document
-      if(strpos($sentence, $negPrefix)){
-        //Reove the white space after the negative prefix
+  /**
+   * Categorize a sentence.
+   *
+   * Process a sentence through the dictionaries and compute a score. This
+   * will return the actual category (neg, pos, neu) after computing.
+   *
+   * @param string
+   *   Sentence or grouping of words.
+   *
+   * @return string
+   *   Returns one of the following based on the highest ranking after
+   *   computing the score.
+   *    - neg -- Negative
+   *    - pos -- Positive
+   *    - neu -- Neutral
+   */
+  public function categorise($sentence) {
+
+    // Using the prefixDictionary, check to see if there are any prefixes that
+    // have been separated from their word by a space. If so, remove the space
+    // so the word may get the proper scoring.
+    foreach($this->prefixDictionary->getList('prefix') as $negPrefix){
+      if (strpos($sentence, $negPrefix)) {
         $sentence = str_replace ($negPrefix . ' ', $negPrefix, $sentence);
-      }//Close if statement
-    }//Close categories function
+      }
+    }
 
-    //Tokenise Document
-    $tokens = $this->_getTokens($sentence);
-    // calculate the score in each category
+    $tokens = $this->_tokenize($sentence);
+
+    // Initialize these for the upcomming loop.
     $total_words = 0;
     $total_score = 0;
-    // $ncat var set to zero
     $ncat = 0;
-    //Empty array for the scores for each of the possible categories
     $scores = array();
 
-    //Loop through all of the different classes set in the $classes variable
     foreach($this->dictionary as $class => $list) {
 
-      //In the scores array add another dimention for the class and set it's value to 1. EG $scores->neg->1
       $scores[$class] = 1;
 
-      //For each of the individual words used loop through to see if they match anything in the $dictionary
-      foreach($tokens as $token){
+      foreach ($tokens as $token) {
 
-        //If statement so to ignore tokens which are either too long or too short or in the ignore list
-        if(strlen($token) > $this->minTokenLength && strlen($token) < $this->maxTokenLength && !in_array($token, $ignoreDictionary->getList('ign'))){//
-        //If dictionary[token][class] is set
+        // Make sure the toekn is not in the ignore list and that it's within
+        // the given length boundaries.
+        if (strlen($token) > $this->minTokenLength
+          && strlen($token) < $this->maxTokenLength
+          && !in_array($token, $this->ignoreDictionary->getList('ign'))) {
+
           if(isset($list[$token])){
-            //Set count equal to it
             $count = $list[$token];
           }else{
             $count = 0;
           }
 
           $scores[$class] *= ($count + 1);
-        }//Close if statement
-
-      }//Close loop for tokens
+        }
+      }
 
       //Score for this class is the prior probability multiplyied by the score for this class
       $scores[$class] = $this->prior[$class] * $scores[$class];
-
-    }//Close loop for classes
+    }
 
     //Makes the scores relative percents
     $classes = array_keys($this->dictionary);
@@ -105,53 +124,42 @@ class Sentiment{
     //Classification is the key to the scores array
     $classification = key($scores);
 
-
     //Return the Classification
     return $classification;
+  }
 
-  }//Close categorise Function
-
-  public function _getTokens($string) // Function which breaks sting down into tokens/single words
-  {
-    //Clean the string so is free from accents
+  /**
+   * Tokenize a string
+   *
+   * Split the string into single words cleaning them on the way.
+   *
+   * @param string
+   *   String of words.
+   *
+   * @return array
+   *   Array of single strings that have been passed through the cleanString
+   *   method.
+   *
+   * @see _cleanString
+   */
+  public function _tokenize($string) {
     $string = $this->_cleanString($string);
-    //Make all texts lowercase as the database of words in in lowercase
     $string = strtolower($string);
-    //Break string into individual words using explode putting them into an array
     $matches = explode(" ", $string);
-    //Return array with each individual token
+
     return $matches;
-  }//Close _getTokens Function
+  }
 
-  public function getLiist($type) //Function to turn words from database in array
-  {
-    //Set up empty word list array
-    $wordList = array();
-
-    $fn = dirname(dirname(__FILE__)) . '/phpInsight/data/data.' . $type . '.php';
-    if (file_exists($fn)) {
-      $temp = file_get_contents($fn);
-      $words = unserialize($temp);
-    } else {
-      throw new Sentiment_Exception("File does not exist: $fn.");
-    }
-
-    //Loop through results
-    foreach ($words as $word) {
-      //remove any slashes
-      $word = stripcslashes($word);
-      //Trim word
-      $trimmed = trim($word);
-
-      //Push results into $wordList array
-      array_push($wordList, $trimmed);
-
-    }
-    //Return $wordList
-    return $wordList;
-  }//Close getIgnoreList Function
-
-  //Function to clean a string so all characters with accents are turned into ASCII characters. EG: ‡ = a
+  /**
+   * Clean the string of accented characters.
+   *
+   * @param string
+   *   String that needs some cleaning
+   *
+   * @return string
+   *   String that has been cleaned. This has also been transformed to
+   *   lowercase
+   */
   private function _cleanString($string) {
     $diac =
     /* A */   chr(192).chr(193).chr(194).chr(195).chr(196).chr(197).
@@ -167,7 +175,7 @@ class Sentiment{
     /* u */   chr(249).chr(250).chr(251).chr(252).
     /* yNn */ chr(255).chr(209).chr(241);
     return strtolower(strtr($string, $diac, 'AAAAAAaaaaaaOOOOOOooooooEEEEeeeeCcIIIIiiiiUUUUuuuuyNn'));
-  }//Close _cleanString Function
+  }
 }
 
 class Sentiment_Exception extends Exception {}

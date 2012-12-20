@@ -17,7 +17,7 @@ class Dictionary {
   public function addDictionary($class) {
 
     // @TODO FIX THIS SO WE DON'T HAVE THE FILE PATH HERE.
-    $fn = dirname(dirname(__FILE__)) . '/phpInsight/data/data.' . $class . '.php';
+    $fn = dirname(dirname(__FILE__)) . '/phpSentiment/data/data.' . $class . '.php';
     if (file_exists($fn)) {
       $temp = file_get_contents($fn);
       $words = unserialize($temp);
@@ -25,11 +25,8 @@ class Dictionary {
       throw new Dictionary_Exception("File does not exist: $fn.");
     }
 
-    //Loop through all of the entries
     foreach ($words as $word) {
-      //remove any slashes
       $word = stripcslashes($word);
-      //Trim word
       $word = trim($word);
 
       //If this word isn't already in the dictionary with this class
@@ -39,13 +36,10 @@ class Dictionary {
         // function ensures that if a word is in the text file more than once it
         // still is only accounted for one in the array
         $this->list[$class][$word] = 1;
-
-      }//Close If statement
-
-    }//Close while loop going through everyline in the text file
+      }
+    }
 
     return true;
-
   }
 
   public function getClass() {
