@@ -1,6 +1,6 @@
 <?php
 
-require_once "dictionary.php";
+require_once "lib/Dictionary.php";
 
 class DictionaryTest extends PHPUnit_Framework_TestCase
 {

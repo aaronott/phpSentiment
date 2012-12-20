@@ -1,11 +1,9 @@
 <?php
 
-//namespace "\Sentiment\Dictionary";
 
 class Dictionary {
 
   private $list;
-  //private $class;
 
   public function __construct($class = NULL) {
 
@@ -17,7 +15,7 @@ class Dictionary {
   public function addDictionary($class) {
 
     // @TODO FIX THIS SO WE DON'T HAVE THE FILE PATH HERE.
-    $fn = dirname(dirname(__FILE__)) . '/phpSentiment/data/data.' . $class . '.php';
+    $fn = dirname(dirname(__FILE__)) . '/data/data.' . $class . '.php';
     if (file_exists($fn)) {
       $temp = file_get_contents($fn);
       $words = unserialize($temp);

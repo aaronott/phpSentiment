@@ -20,7 +20,7 @@
 
  */
 
-require_once "dictionary.php";
+require_once "lib/Dictionary.php";
 
 
 class Sentiment{

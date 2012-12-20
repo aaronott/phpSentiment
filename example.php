@@ -1,5 +1,5 @@
 <?php
-  include 'sentiment.class.php';
+  include 'lib/Sentiment.php';
 
   $sentiment = new Sentiment();
 

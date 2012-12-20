@@ -1,6 +1,6 @@
 <?php
 
-require_once "sentiment.class.php";
+require_once "lib/Sentiment.php";
 
 class SentimentTest extends PHPUnit_Framework_TestCase
 {
