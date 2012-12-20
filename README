@@ -1,6 +1,6 @@
 phpSentiment - Sentiment Analysis in PHP
 ========================================
-This is a rewrite of the great phpInsite class that can be found at
+This is a rewrite of the great phpInsight class that can be found at
 https://github.com/JWHennessey/phpInsight
 
 I did this for my purpose only. If someone else likes the rewrite that's great!
