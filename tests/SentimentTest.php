@@ -11,5 +11,16 @@ class SentimentTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('pos', $sentiment->categorise('Today was amazing'));
         $this->assertEquals('neu', $sentiment->categorise('Today was ok'));
     }
+
+    public function testGetTokens() {
+      $sentiment = new Sentiment();
+
+      $tokens = $sentiment->_getTokens("Tokenize this string yo!");
+      $this->assertEquals('array', gettype($tokens));
+      $this->assertEquals('tokenize', $tokens[0]);
+      $this->assertEquals('yo!', end($tokens));
+      $this->assertEquals(4, sizeof($tokens));
+
+    }
 }
 ?>
