@@ -63,52 +63,11 @@ class Sentiment{
    *    - pos -- Positive
    *    - neu -- Neutral
    */
-  public function categorise($sentence) {
+  public function categorize($sentence) {
 
-    // Using the prefixDictionary, check to see if there are any prefixes that
-    // have been separated from their word by a space. If so, remove the space
-    // so the word may get the proper scoring.
-    foreach($this->prefixDictionary->getList('prefix') as $negPrefix){
-      if (strpos($sentence, $negPrefix)) {
-        $sentence = str_replace ($negPrefix . ' ', $negPrefix, $sentence);
-      }
-    }
-
-    $tokens = $this->_tokenize($sentence);
-
-    // Initialize these for the upcomming loop.
-    $total_words = 0;
-    $total_score = 0;
-    $ncat = 0;
-    $scores = array();
-
-    foreach($this->dictionary as $class => $list) {
-
-      $scores[$class] = 1;
-
-      foreach ($tokens as $token) {
-
-        // Make sure the toekn is not in the ignore list and that it's within
-        // the given length boundaries.
-        if (strlen($token) > $this->minTokenLength
-          && strlen($token) < $this->maxTokenLength
-          && !in_array($token, $this->ignoreDictionary->getList('ign'))) {
-
-          if(isset($list[$token])){
-            $count = $list[$token];
-          }else{
-            $count = 0;
-          }
-
-          $scores[$class] *= ($count + 1);
-        }
-      }
-
-      //Score for this class is the prior probability multiplyied by the score for this class
-      $scores[$class] = $this->prior[$class] * $scores[$class];
-    }
-
+    $scores = $this->analize($sentence);
     //Makes the scores relative percents
+    $total_score = 0;
     $classes = array_keys($this->dictionary);
     foreach($classes as $class) {
       $total_score += $scores[$class];
@@ -126,6 +85,55 @@ class Sentiment{
 
     //Return the Classification
     return $classification;
+  }
+
+  public function score($sentence) {
+    $scores = $this->analize($sentence);
+
+    return $scores;
+  }
+
+  public function analize($sentence) {
+    // Using the prefixDictionary, check to see if there are any prefixes that
+    // have been separated from their word by a space. If so, remove the space
+    // so the word may get the proper scoring.
+    foreach($this->prefixDictionary->getList('prefix') as $negPrefix){
+      if (strpos($sentence, $negPrefix)) {
+        $sentence = str_replace ($negPrefix . ' ', $negPrefix, $sentence);
+      }
+    }
+
+    $tokens = $this->_tokenize($sentence);
+
+    // Initialize these for the upcomming loop.
+    $scores = array();
+
+    foreach($this->dictionary as $class => $list) {
+
+      $scores[$class] = 1;
+
+      foreach ($tokens as $token) {
+
+        // Make sure the token is not in the ignore list and that it's within
+        // the given length boundaries.
+        if (strlen($token) > $this->minTokenLength
+          && strlen($token) < $this->maxTokenLength
+          && !in_array($token, $this->ignoreDictionary->getList('ign'))) {
+
+          if (isset($list[$token])) {
+            $count = $list[$token];
+          }
+          else {
+            $count = 0;
+          }
+
+          $scores[$class] *= ($count + 1);
+        }
+      }
+      //Score for this class is the prior probability multiplyied by the score for this class
+      $scores[$class] = $this->prior[$class] * $scores[$class];
+    }
+    return $scores;
   }
 
   /**

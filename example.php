@@ -1,36 +1,26 @@
+#!/usr/bin/env php
 <?php
   include 'lib/Sentiment.php';
 
   $sentiment = new Sentiment();
 
-  $example1 = $sentiment->categorise('Today was rubbish'); //Neg
-  $example2 = $sentiment->categorise('Today was amazing'); // Pos
-  $example3 = $sentiment->categorise('Today was ok'); // Neu
+  $example1 = $sentiment->categorize('Today was rubbish'); //Neg
+  $example2 = $sentiment->categorize('Today was amazing'); // Pos
+  $example3 = $sentiment->categorize('Today was ok'); // Neu
 
 
 ?>
-<html>
-<head>
-</head>
+  Example 1
+  Today was rubbish
+  Classification - <?php echo $example1; ?>
 
-<body>
-  <h1>phpInsight Example</h1>
 
-  <h2>Example 1</h2>
+  Example 2
+  Today was amazing
+  Classification - <?php echo $example2; ?>
 
-  <p>Today was rubbish</p>
-  <p>Classification - <?php echo $example1; ?></p>
 
-  <h2>Example 2</h2>
-
-  <p>Today was amazing</p>
-  <p>Classification - <?php echo $example2; ?></p>
-
-  <h2>Example 3</h2>
-
-  <p>Today was ok</p>
-  <p>Classification - <?php echo $example3; ?></p>
-
-</body>
-</html>
+  Example 3
+  Today was ok
+  Classification - <?php echo $example3; ?>
 
