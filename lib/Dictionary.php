@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * Implements the Dictionary class.
+ */
 
 class Dictionary {
 
@@ -24,28 +26,29 @@ class Dictionary {
     }
 
     foreach ($words as $word) {
-      $word = stripcslashes($word);
-      $word = trim($word);
+      $word = trim(stripcslashes($word));
 
-      //If this word isn't already in the dictionary with this class
-      if(!isset($this->list[$class][$word])) {
-
-        // Add to this word to the dictionary and set counter value as one. This
-        // function ensures that if a word is in the text file more than once it
-        // still is only accounted for one in the array
-        $this->list[$class][$word] = 1;
-      }
+      $this->list[$class][$word] = 1;
     }
-
-    return true;
   }
 
-  public function getClass() {
-    return $this->class;
+  /**
+   * Check if a word is in a given class list in the dictionary.
+   *
+   * @param string
+   *   Class name for the list to be checked against.
+   *
+   * @param string
+   *   Token to be checked.
+   *
+   * @return bool
+   */
+  public function inList($class, $token) {
+    return isset($this->list[$class][$token]);
   }
 
-  public function inList($list, $token) {
-
+  public function getWeight($class, $token) {
+    return $this->inList($class, $token) ? $this->list[$class][$token] : 0;
   }
 
   public function getList($class = NULL) {
@@ -57,14 +60,6 @@ class Dictionary {
     return $this->list;
   }
 
-  /**
-   * Magic __get function
-   */
-  public function __get($name) {
-    if (is_function("get_" . $name)) {
-      return 'get_' . $name;
-    }
-  }
 }
 
 class Dictionary_Exception extends Exception {}

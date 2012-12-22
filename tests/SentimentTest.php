@@ -4,24 +4,29 @@ require_once "lib/Sentiment.php";
 
 class SentimentTest extends PHPUnit_Framework_TestCase
 {
-    public function testSentiment()
-    {
-      $sentiment = new Sentiment();
-        $this->assertEquals('neg', $sentiment->categorize('Today was rubbish'));
-        $this->assertEquals('pos', $sentiment->categorize('Today was amazing'));
-        $this->assertEquals('neu', $sentiment->categorize('Today was ok'));
-    }
 
-    public function testTokenize() {
-      $sentiment = new Sentiment();
+  /**
+   * @covers Sentiment::categorize
+   */
+  public function testCategorize()
+  {
+    $sentiment = new Sentiment();
+    $this->assertEquals('neg', $sentiment->categorize('Today was rubbish'));
+    $this->assertEquals('pos', $sentiment->categorize('Today was amazing'));
+    $this->assertEquals('neu', $sentiment->categorize('Today was ok'));
+  }
 
-      $tokens = $sentiment->_tokenize("Tokenize this string yo!");
-      $this->assertEquals('array', gettype($tokens));
-      $this->assertEquals('tokenize', $tokens[0]);
-      $this->assertEquals('yo!', end($tokens));
-      $this->assertEquals(4, sizeof($tokens));
+  /**
+   * @covers Sentiment::score
+   */
+  public function testScore() {
+    $sentiment = new Sentiment();
+    $scores = $sentiment->score('Today was rubbish');
 
-    }
+    $this->assertEquals('array', gettype($scores));
+    $this->assertEquals(3, sizeof($scores));
 
+    $this->assertEquals(0.666666666666, $scores['neg']);
+  }
 }
 ?>

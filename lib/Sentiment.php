@@ -4,6 +4,7 @@ require_once "lib/Dictionary.php";
 
 class Sentiment{
   private $dictionary;
+  private $dictionaryList;
   private $ignoreDictionary;
   private $previxDictionary;
   private $minTokenLength = 1; //min token length for it to be taken into consideration
@@ -16,12 +17,12 @@ class Sentiment{
    * Build the dictionary to check against.
    */
   public function __construct() {
-    $dictionary = new Dictionary();
-    $dictionary->addDictionary('neg');
-    $dictionary->addDictionary('pos');
-    $dictionary->addDictionary('neu');
+    $this->dictionary = new Dictionary();
+    $this->dictionary->addDictionary('neg');
+    $this->dictionary->addDictionary('pos');
+    $this->dictionary->addDictionary('neu');
 
-    $this->dictionary = $dictionary->getList();
+    $this->dictionaryList = $this->dictionary->getList();
     $this->ignoreDictionary = new Dictionary('ign');
     $this->prefixDictionary = new Dictionary('prefix');
   }
@@ -41,17 +42,17 @@ class Sentiment{
    *    - neg -- Negative
    *    - pos -- Positive
    *    - neu -- Neutral
+   *
+   * @see analyze()
    */
   public function categorize($sentence) {
 
-    $scores = $this->analize($sentence);
+    $scores = $this->analyze($sentence);
     //Makes the scores relative percents
-    $total_score = 0;
-    $classes = array_keys($this->dictionary);
-    foreach($classes as $class) {
-      $total_score += $scores[$class];
-    }
 
+    $total_score = array_sum($scores);
+
+    $classes = array_keys($this->dictionaryList);
     foreach($classes as $class) {
       $scores[$class] = $scores[$class] / $total_score;
     }
@@ -59,20 +60,44 @@ class Sentiment{
     //Sort array in reverse order
     arsort($scores);
 
-    //Classification is the key to the scores array
-    $classification = key($scores);
-
-    //Return the Classification
-    return $classification;
+    // return the top scored category
+    return key($scores);
   }
 
+  /**
+   * Get the scores for the sentence
+   *
+   * This is useful for testing polarity of a sentence.
+   *
+   * @param string
+   *   Sentence or word grouping that should be analyzed.
+   *
+   * @return array
+   *   Array keyed by class/category of scores for each category. This can be
+   *   used to show polarity of an item.
+   *
+   * @see analize
+   */
   public function score($sentence) {
-    $scores = $this->analize($sentence);
+    $scores = $this->analyze($sentence);
 
     return $scores;
   }
 
-  public function analize($sentence) {
+  /**
+   * Analyze the sentence
+   *
+   * Analyze and performe the calculations on the word grouping that is passed
+   * in.
+   *
+   * @param string
+   *   Sentence or word grouping that should be analyzed.
+   *
+   * @return array
+   *   Array keyed by class/category of scores for each category. This can be
+   *   used to show polarity of an item.
+   */
+  private function analyze($sentence) {
     // Using the prefixDictionary, check to see if there are any prefixes that
     // have been separated from their word by a space. If so, remove the space
     // so the word may get the proper scoring.
@@ -82,12 +107,12 @@ class Sentiment{
       }
     }
 
-    $tokens = $this->_tokenize($sentence);
-
     // Initialize these for the upcomming loop.
     $scores = array();
+    $classes = array_keys($this->dictionaryList);
+    $tokens = $this->_tokenize($sentence);
 
-    foreach($this->dictionary as $class => $list) {
+    foreach($classes as $class) {
 
       $scores[$class] = 1;
 
@@ -99,14 +124,8 @@ class Sentiment{
           && strlen($token) < $this->maxTokenLength
           && !in_array($token, $this->ignoreDictionary->getList('ign'))) {
 
-          if (isset($list[$token])) {
-            $count = $list[$token];
-          }
-          else {
-            $count = 0;
-          }
-
-          $scores[$class] *= ($count + 1);
+          // Multiply the score by the Weight +1 so we don't multiply by 0
+          $scores[$class] *= ($this->dictionary->getWeight($class, $token) + 1);
         }
       }
       //Score for this class is the prior probability multiplyied by the score for this class
@@ -129,7 +148,7 @@ class Sentiment{
    *
    * @see _cleanString
    */
-  public function _tokenize($string) {
+  private function _tokenize($string) {
     $string = $this->_cleanString($string);
     $string = strtolower($string);
     $matches = explode(" ", $string);
