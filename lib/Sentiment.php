@@ -183,5 +183,3 @@ class Sentiment{
     return strtolower(strtr($string, $diac, 'AAAAAAaaaaaaOOOOOOooooooEEEEeeeeCcIIIIiiiiUUUUuuuuyNn'));
   }
 }
-
-class Sentiment_Exception extends Exception {}
