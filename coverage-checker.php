@@ -1,4 +1,6 @@
-nputFile = $argv[1];
+<?php
+
+$inputFile = $argv[1];
 $percentage = min(100, max(0, (int) $argv[2]));
 
 if (!file_exists($inputFile)) {
